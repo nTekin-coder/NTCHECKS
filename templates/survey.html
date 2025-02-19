@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NTCHECKS Umfrage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
+        label {
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h2>Qualitäts- & Hygiene-Check</h2>
+    <form method="post">
+        <label>Filiale:</label><br>
+        <input type="text" name="filiale" required><br>
+
+        <label>Sauberkeit (1-5):</label><br>
+        <input type="number" name="sauberkeit" min="1" max="5" required><br>
+
+        <label>Produktqualität (1-5):</label><br>
+        <input type="number" name="produktqualität" min="1" max="5" required><br>
+
+        <input type="submit" value="Absenden">
+    </form>
+</body>
+</html>
