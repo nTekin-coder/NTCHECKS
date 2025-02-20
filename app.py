@@ -1,74 +1,68 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, url_for
 import pandas as pd
-import os
+import datetime
 
 app = Flask(__name__)
-app.secret_key = "geheimespasswort"  # Geheimschlüssel für die Session
 
-data_file = "survey_results.xlsx"
+# **Hier sind jetzt ALLE 22 Fragen korrekt**
+questions = [
+    {"text": "Plunder- & Gebäckvitrine: A-Fläche richtig bestückt?", "points": [40, 27, 13, 0]},
+    {"text": "Brotregal: A-Fläche richtig bestückt?", "points": [40, 27, 13, 0]},
+    {"text": "Kühlvitrine (Kondi & Snack): Farb- und Formenspiel, tageszeitliche Präsentation?", "points": [40, 27, 13, 0]},
+    {"text": "Handelswaren & HW-Kühlregal: lt. Vorgabe befüllt, ohne Kartons, Etiketten lesbar?", "points": [20, 13, 7, 0]},
+    {"text": "Produkte entsprechen vorgegebener Geier-Qualität?", "points": [50, 33, 17, 0]},
+    {"text": "Ladenbackliste wird korrekt geführt?", "points": [40, 27, 13, 0]},
+    {"text": "Frische ist gegeben (Semmel & Salzstangerl nicht älter als 4 Stunden)?", "points": [50, 33, 17, 0]},
+    {"text": "Menge und Auswahl sind angemessen für die Uhrzeit?", "points": [50, 33, 17, 0]},
+    {"text": "Snacks sehen frisch und unwiderstehlich aus?", "points": [50, 33, 17, 0]},
+    {"text": "Kaffeekultur wird systemgetreu gelebt?", "points": [60, 40, 20, 0]},
+    {"text": "Begrüßung findet statt?", "points": [30, 20, 10, 0]},
+    {"text": "W-Fragen werden benutzt?", "points": [40, 27, 13, 0]},
+    {"text": "Haben Sie eine GEIER-Karte gefragt?", "points": [20, 13, 7, 0]},
+    {"text": "Kassiervorgaben werden eingehalten?", "points": [20, 13, 7, 0]},
+    {"text": "Herzliche Verabschiedung findet statt?", "points": [40, 27, 33, 0]},
+    {"text": "Es wird aktiv, herzlich, kompetent und flott verkauft", "points": [30, 20, 10, 0]},
+    {"text": "Hat der Kunde Vorrang (ab 2 wartenden Kunden, Kollegin rufen)?", "points": [30, 20, 10, 0]},
+    {"text": "Hygienisches Arbeiten (Gebäckzange, Brotsackerl, Handschuhe)?", "points": [80, 53, 27, 0]},
+    {"text": "Berufskleidung sauber & vollständig?", "points": [50, 33, 17, 0]},
+    {"text": "Außen: Eindruck für Grundordnung und Sauberkeit tadellos?", "points": [60, 40, 20, 0]},
+    {"text": "Innen: Eindruck für Grundordnung und Sauberkeit tadellos?", "points": [80, 53, 27, 0]},
+    {"text": "Preisauszeichnung vollständig & korrekt, Plakate ordentlich platziert?", "points": [60, 40, 20, 0]},
+    {"text": "Bemerkungen (Freitext)", "type": "text"},
+]
 
-# Login-Daten für Gebietsleiter
-USER_CREDENTIALS = {
-    "gebietsleiter": "passwort123"
-}
-
-@app.route('/')
-def home():
-    if "user" in session:
-        return f"Willkommen {session['user']}! <a href='/survey'>Zur Umfrage</a> | <a href='/download'>Ergebnisse</a> | <a href='/logout'>Logout</a>"
-    return "Willkommen zu NTCHECKS! <a href='/login'>Login</a>"
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
-            session["user"] = username
-            return redirect(url_for('survey'))  # Nutzer zur Umfrage weiterleiten
-        else:
-            return "Falsche Login-Daten! <a href='/login'>Erneut versuchen</a>"
-
-    return render_template("login.html")
-
-@app.route('/logout')
-def logout():
-    session.pop("user", None)
-    return redirect(url_for('home'))
-
-@app.route('/survey', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def survey():
-    if "user" not in session:
-        return redirect(url_for('login'))
+    if request.method == "POST":
+        filialnummer = request.form.get("filialnummer")
+        unterschrift = request.form.get("unterschrift")
 
-    if request.method == 'POST':
-        filiale = request.form['filiale']
-        sauberkeit = request.form['sauberkeit']
-        produktqualität = request.form['produktqualität']
+        gesamtpunkte = sum(int(request.form.get(f"q{i}", 0)) for i, q in enumerate(questions) if "points" in q)
 
-        new_data = pd.DataFrame([[filiale, sauberkeit, produktqualität]], 
-                                columns=["Filiale", "Sauberkeit", "Produktqualität"])
-        
-        if os.path.exists(data_file):
-            existing_data = pd.read_excel(data_file)
-            new_data = pd.concat([existing_data, new_data], ignore_index=True)
-        
-        new_data.to_excel(data_file, index=False)
-        
-        return render_template("thank_you.html")  # Nach Absenden zur Bestätigungsseite weiterleiten
+        data = {
+            "Monat": datetime.date.today().strftime("%Y-%m"),
+            "Filialnummer": filialnummer,
+            "Ergebnis": gesamtpunkte
+        }
 
-    return render_template("survey.html")
+        df = pd.DataFrame([data])
+        excel_datei = "Umfrage_Ergebnisse.xlsx"
 
-@app.route('/download')
-def download():
-    if os.path.exists(data_file):
-        return send_file(data_file, as_attachment=True)
-    else:
-        return "Keine Ergebnisse vorhanden."
+        try:
+            existing_df = pd.read_excel(excel_datei)
+            df = pd.concat([existing_df, df], ignore_index=True)
+        except FileNotFoundError:
+            pass
 
-import os
+        df.to_excel(excel_datei, index=False)
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+        return redirect(url_for("thank_you"))
+
+    return render_template("survey.html", questions=questions)
+
+@app.route("/thank-you")
+def thank_you():
+    return "<h2>Danke für die Teilnahme!</h2> <a href='/'>Neue Umfrage starten</a>"
+
+if __name__ == "__main__":
+    app.run(debug=True)

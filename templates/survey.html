@@ -3,59 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NTCHECKS Umfrage</title>
+    <title>Erfolgsfaktoren - Check VERKAUF</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 40px;
-            text-align: center;
-            background-color: #f4f4f4;
-        }
-        h2 {
-            color: #333;
-        }
-        form {
-            background: white;
+            background-color: #f8f9fa;
+            margin: 0;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+        }
+        .container {
+            max-width: 800px;
+            background: white;
+            padding: 25px;
             margin: auto;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .choices {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
         }
         label {
-            font-weight: bold;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        input {
-            width: 100%;
-            padding: 8px;
-            margin: 10px 0;
+        label:hover {
+            background: #e9ecef;
+        }
+        input[type="radio"] {
+            accent-color: #007bff;
+            transform: scale(1.3);
+        }
+        input[type="text"] {
+            margin-top: 5px;
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            width: 100%;
+            font-size: 16px;
         }
-        input[type="submit"] {
-            background-color: #28a745;
+        .submit-button {
+            display: block;
+            width: 100%;
+            background: #007bff;
             color: white;
-            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
             cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
         }
-        input[type="submit"]:hover {
-            background-color: #218838;
+        .submit-button:hover {
+            background: #0056b3;
+        }
+        .info-text {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <h2>Qualitäts- & Hygiene-Check</h2>
-    <form method="post">
-        <label>Filiale:</label><br>
-        <input type="text" name="filiale" required><br>
 
-        <label>Sauberkeit (1-5):</label><br>
-        <input type="number" name="sauberkeit" min="1" max="5" required><br>
+    <div class="container">
+        <h1>Erfolgsfaktoren - Check VERKAUF</h1>
+        
+        <form method="post">
+            <!-- Filialnummer Eingabe -->
+            <div class="question">
+                <p><strong>Filialnummer:</strong></p>
+                <input type="text" name="filialnummer" placeholder="Filialnummer eingeben..." required>
+            </div>
 
-        <label>Produktqualität (1-5):</label><br>
-        <input type="number" name="produktqualität" min="1" max="5" required><br>
+            {% for q in questions %}
+                <div class="question">
+                    <p><strong>{{ q.text }}</strong></p>
+                    {% if q.get("type") == "text" %}
+                        <input type="text" name="q{{ loop.index0 }}" placeholder="Antwort eingeben..." required>
+                    {% else %}
+                        <div class="choices">
+                            {% for p in q.points %}
+                                <label>
+                                    <input type="radio" name="q{{ loop.index0 }}" value="{{ p }}" required>
+                                    {{ p }} Punkte
+                                </label>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <div class="question">
+                <p><strong>Unterschrift:</strong></p>
+                <input type="text" name="unterschrift" placeholder="Dein Name..." required>
+            </div>
 
-        <input type="submit" value="Absenden">
-    </form>
+            <button type="submit" class="submit-button">✔ EFA Check abschließen</button>
+            <p class="info-text">Nach dem Absenden wird das Ergebnis gespeichert.</p>
+        </form>
+    </div>
+
 </body>
 </html>
